@@ -10,7 +10,7 @@
 #   labels, uids, paths = load_train_data(data_path)
 #   audios = load_audio(paths)
 #
-# all audios loaded ~ 2GB RAM !!!
+# all audios loaded ~ 2GB RAM 
 
 import os
 from os.path import join
@@ -81,24 +81,24 @@ def load_audio(path, fill=False, resample=False):
     Returns a numpy array corresponding to decoded wav file from path
     If path is a list of paths, returns a list of decoded files
     '''
-    
+
     if (isinstance(path, str)):
         # convert to list so it is iterable
         path = [path]
-    
+
     samples_list = []
     for file_path in path:
         sample_rate, samples = wavfile.read(str(file_path))
         if (fill and len(samples) < 16000):
             # TODO: fill with background noise instead of zeros
             samples.resize(16000, refcheck=False)
-            
+
         if resample:
             new_sample_rate = sample_rate / 2
             samples = signal.resample(samples, int(new_sample_rate / sample_rate * samples.shape[0]))
-            
+
         samples_list.append(samples)
-        
+
     # If the input is only one path,dont return a list of arrays, return only the array
     return samples_list if len(samples_list) > 1 else samples_list[0]
 
@@ -107,9 +107,9 @@ def get_silence(raw_data_df, n, resample=False):
     '''
     output_df_list = []
     silence_df = raw_data_df.loc[raw_data_df['label'] == 'silence']
-    
+
     num_silences = silence_df.shape[0]
-    
+
     for i in range(num_silences):
         output_audios = []
         sub_silence_df = silence_df.iloc[i]
@@ -121,56 +121,56 @@ def get_silence(raw_data_df, n, resample=False):
         for j in range (int(n / num_silences)):
             starting_time = random.randint(0, audio_length - 16000)
             output_audios.append(audio[starting_time:(starting_time + 16000)])
-            
+
         output_df_list.append(pd.DataFrame({'label' : 'silence',
                                             'uid'   : uid,
                                             'path'  : path,
                                             'wav'   : output_audios}))
-    
+
     return pd.concat(output_df_list)
 
 def get_balanced_unknown(raw_data_df, n):
     num_unknown = len(unknown_labels)
     num_unknown_samples = int(n / num_unknown)
-    
+
     unknown_df_list = []
-    
+
     for label in unknown_labels:
         aux_df = raw_data_df.loc[raw_data_df['label'] == label]
         n_samples = aux_df.shape[0]
-        
+
         r = False
         if num_unknown_samples > n_samples:
             r = True
-        
+
         sub_df = aux_df.iloc[np.random.choice(range(n_samples), num_unknown_samples, replace=r)]
         unknown_df_list.append(sub_df)
-        
+
     return pd.concat(unknown_df_list)
 
 def split_train(df, train_size = 0.8, dev_size = 0.1, test_size = 0.1):
     if (train_size + dev_size + test_size != 1):
         print('Weights must sum 1!')
         return
-    
+
     df['set'] = np.nan
-    
+
     df_list = []
     for label in possible_labels:
         sub_df = df.loc[df['label'] == label].copy()
         n = sub_df.shape[0]
-        
+
         idx_sample = np.random.choice(range(n), n, replace=False)
         idx_train = idx_sample[:int(n * train_size)]
         idx_dev   = idx_sample[int(n * train_size):int(n * (train_size + dev_size))]
         idx_test  = idx_sample[int(n * (train_size + dev_size)):]
-        
+
         sub_df.iloc[idx_train, 4] = 'train'
         sub_df.iloc[idx_dev, 4] = 'dev'
         sub_df.iloc[idx_test, 4] = 'test'
-        
+
         df_list.append(sub_df)
-        
+
     return pd.concat(df_list)
 
 def prepare_data(data_path, augment_data = None, unknown_rate = 1, silence_rate = 1, train_size = 0.8, dev_size = 0.1,
@@ -193,14 +193,14 @@ def prepare_data(data_path, augment_data = None, unknown_rate = 1, silence_rate 
     if random_state is not None:
         random.seed(random_state)
         np.random.seed(random_state)
-        
+
     labels, uids, paths = load_train_data(data_path, max_examples)
     raw_data_df = pd.DataFrame({'label' : labels, 'uid' : uids, 'path' : paths})
-    
+
     mean_samples = np.mean(raw_data_df.loc[raw_data_df['label'].isin(known_labels)]
                        .groupby(['label'])
                        .agg({'path' : 'count'})['path'])
-    
+
     # Get 3 dataframes, one for known labels, another for unknown labels and one for silence audios
     known_df = raw_data_df.loc[raw_data_df['label'].isin(known_labels)].copy()
     unknown_df = get_balanced_unknown(raw_data_df, mean_samples * unknown_rate)
@@ -208,11 +208,11 @@ def prepare_data(data_path, augment_data = None, unknown_rate = 1, silence_rate 
 
     known_df['wav'] = load_audio(known_df['path'].values, fill=True, resample=resample)
     unknown_df['wav'] = load_audio(unknown_df['path'].values, fill=True, resample=resample)
-    
+
     arranged_data_df = pd.concat([known_df, unknown_df, silence_df])
     arranged_data_df.loc[arranged_data_df['label'].isin(unknown_labels), 'label'] = 'unknown'
-    
+
     split_data_df = split_train(arranged_data_df, train_size, dev_size, test_size)
     split_data_df.reset_index(drop=True, inplace=True)
-    
+
     return split_data_df
