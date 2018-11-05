@@ -24,10 +24,9 @@ Important notes:
 - 01_input_data.py: Reads the data in Audio format 
 - 02_get_data.py: Class that transforms it to the format that will be fed to the NN
 - 03_models.py: Convolutional Neural Network models that are used in this project. The models used in this project present few variations on their architecture. An LSTM model was also considered but its performance was not as good as the performance coming from CNN models, so the latter approach was finally further developed.
-- 04_make_predictions.py: Task that does the predictions taking the last model trained. This function needs to be further developed so the user can choose which model needs to be picked for prediction. 
+- 04_make_predictions.py: Script that makes the processing and prediction over the test dataset, and postprocess the prediction so the resulting file can be downloaded. The aim of this function was to automatise the preparation of the submission to the Kaggle website, implying the minimal effort by the user. The predicting function needs to be further developed so the user can choose which model needs to be picked for prediction. 
 - 05_metrics_data.py: Task that calculates and shows the performance metrics (Accuracy) of the predictions made.
 - 06_load_data.py: Ensemble of functions that read and load the tranining and test data in audio format
-- 07_postprocess_submission.py: Script that makes the processing and prediction over the test dataset, and postprocess the prediction so the resulting file can be downloaded. The aim of this function was to automatise the preparation of the submission to the Kaggle website, implying the minimal effort by the user. 
 
 # Datasets
 * data/train: dataset to develop our algorithm. We divide these data into:
