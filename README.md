@@ -1,6 +1,6 @@
 # Kaggle Speach Reconition 
 
-# Kaggle link
+# Link to the Kaggle challenge
 https://www.kaggle.com/c/tensorflow-speech-recognition-challenge
 
 # Project Overview
@@ -11,6 +11,8 @@ But, for independent makers and entrepreneurs, it’s hard to build a simple spe
 In this competition, you're challenged to use the Speech Commands Dataset to build an algorithm that understands simple spoken commands. By improving the recognition accuracy of open-sourced voice interface tools, we can improve product effectiveness and their accessibility.
 
 # Code structure
+
+Important note: The main skeleton of the code, as well as some specific functions, were taken from the great TensorFlow tutorial (www.tensorflow.org/tutorials/sequences/audio_recognition). It would not have been possible to get this project started without the great help of such a great tutorial prepared by the incredible team working at TensorFlow
 
 - scan_hyperparameters.sh: Bash program that schedules training executions with different combinations of hyperparameters given
 - s00_input_params: Parameters that user should input before executing the main script s_train
