@@ -12,19 +12,22 @@ In this competition, you're challenged to use the Speech Commands Dataset to bui
 
 # Code structure
 
-Important note: The main skeleton of the code, as well as some specific functions, were taken from the great TensorFlow tutorial (www.tensorflow.org/tutorials/sequences/audio_recognition). It would not have been possible to get this project started without the great help of such a great tutorial prepared by the incredible team working at TensorFlow
+Important notes: 
 
+1) The main skeleton of the code, as well as some specific functions, were taken from the great TensorFlow tutorial (www.tensorflow.org/tutorials/sequences/audio_recognition). It would not have been possible to get this project started without the great help of such a great tutorial prepared by the incredible team working at TensorFlow
+
+2) 
+
+- main.py: Main execution that performs the training task
 - scan_hyperparameters.sh: Bash program that schedules training executions with different combinations of hyperparameters given
-- s00_input_params: Parameters that user should input before executing the main script s_train
-- s_train.py: Main Exec
-- s01_input_data.py: Reads the data in Audio format 
-- s02_get_data.py: Class that transforms it to the format that will be fed to the NN
-- s03_models.py: NN models that are used in this project. CNN were used in this project with few variations on the architecture.
-- s04_make_predictions.py: Script that does the predictions taking the last model trained. 
-- s05_metrics_data.py: Script that gets the performance metrics (Accuracy) of the predictions made.
-
-
-Script where NN model is defined: s02
+- 00_input_params.py: Parameters that user should input before executing the main script s_train
+- 01_input_data.py: Reads the data in Audio format 
+- 02_get_data.py: Class that transforms it to the format that will be fed to the NN
+- 03_models.py: Convolutional Neural Network models that are used in this project. The models used in this project present few variations on their architecture. An LSTM model was also considered but its performance was not as good as the performance coming from CNN models, so the latter approach was finally further developed.
+- 04_make_predictions.py: Task that does the predictions taking the last model trained. This function needs to be further developed so the user can choose which model needs to be picked for prediction. 
+- 05_metrics_data.py: Task that calculates and shows the performance metrics (Accuracy) of the predictions made.
+- 06_load_data.py: Ensemble of functions that read and load the tranining and test data in audio format
+- 07_postprocess_submission.py: Script that makes the processing and prediction over the test dataset, and postprocess the prediction so the resulting file can be downloaded. The aim of this function was to automatise the preparation of the submission to the Kaggle website, implying the minimal effort by the user. 
 
 # Datasets
 * data/train: dataset to develop our algorithm. We divide these data into:
