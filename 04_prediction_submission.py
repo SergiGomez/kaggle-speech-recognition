@@ -118,4 +118,4 @@ submission.loc[:,'label']= submission.loc[:,'label'].replace([9],'off')
 submission.loc[:,'label']= submission.loc[:,'label'].replace([10],'stop')
 submission.loc[:,'label']= submission.loc[:,'label'].replace([11],'go')    
 
-submission.to_csv("submission_sergi.csv", index=False)
+submission.to_csv("submission.csv", index=False)
