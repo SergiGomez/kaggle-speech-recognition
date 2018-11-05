@@ -20,7 +20,7 @@ def prepare_model_settings(label_count, sample_rate, clip_duration_ms,
                            window_size_ms, window_stride_ms,
                            dct_coefficient_count,energy_coef_volume,
                            pooling_dims, stride_dims, beta1, beta2):
-    
+
     """Calculates common settings needed for all models.
     Args:
     label_count: How many classes are to be recognized.
@@ -29,7 +29,7 @@ def prepare_model_settings(label_count, sample_rate, clip_duration_ms,
     window_size_ms: Duration of frequency analysis window.
     window_stride_ms: How far to move in time between frequency windows.
     dct_coefficient_count: Number of frequency bins to use for analysis.
-    
+
      Returns:
     Dictionary containing common settings.
     """
@@ -44,7 +44,7 @@ def prepare_model_settings(label_count, sample_rate, clip_duration_ms,
         spectrogram_length = 1 + int(length_minus_window / window_stride_samples)
         fingerprint_size = dct_coefficient_count * spectrogram_length
     pooling_dims = [int(x) for x in pooling_dims]
-    stride_dims = [int(x) for x in stride_dims]    
+    stride_dims = [int(x) for x in stride_dims]
     beta1 = 1. - math.pow(10.,float(beta1))
     beta2 = 1. - math.pow(10.,float(beta2))
     output['desired_samples'] = desired_samples
@@ -60,11 +60,11 @@ def prepare_model_settings(label_count, sample_rate, clip_duration_ms,
     output['stride_dims'] = stride_dims
     output['beta1'] = beta1
     output['beta2'] = beta2
-    return output    
+    return output
 
 def create_model(fingerprint_input, model_settings, model_architecture,
                  is_training, runtime_settings=None):
-    
+
     """Builds a model of the requested architecture compatible with the settings.
   There are many possible ways of deriving predictions from a spectrogram
   input, so this function provides an abstract interface for creating different
@@ -112,8 +112,7 @@ def create_model(fingerprint_input, model_settings, model_architecture,
         raise Exception('model_architecture argument "' + model_architecture +
                     '" not recognized, should be one of "single_fc", "conv",' +
                     ' "low_latency_conv, or "low_latency_svdf"')
-        
-    
+
 def load_variables_from_checkpoint(sess, start_checkpoint):
     """Utility function to centralize checkpoint restoration.
     Args:
@@ -122,10 +121,9 @@ def load_variables_from_checkpoint(sess, start_checkpoint):
     """
     saver = tf.train.Saver(tf.global_variables())
     saver.restore(sess, start_checkpoint)
-    
-    
+
 def create_single_fc_model(fingerprint_input, model_settings, is_training):
-      
+
     """Builds a model with a single hidden fully-connected layer.
     This is a very simple model with just one matmul and bias layer. As you'd
     expect, it doesn't produce very accurate results, but it is very fast and
@@ -145,7 +143,7 @@ def create_single_fc_model(fingerprint_input, model_settings, is_training):
     TensorFlow node outputting logits results, and optionally a dropout
     placeholder.
     """
-    if is_training:    
+    if is_training:
         dropout_prob = tf.placeholder(tf.float32, name='dropout_prob')
     fingerprint_size = model_settings['fingerprint_size']
     label_count = model_settings['label_count']
@@ -156,7 +154,7 @@ def create_single_fc_model(fingerprint_input, model_settings, is_training):
     if is_training:
         return logits, dropout_prob
     else:
-        return logits        
+        return logits
 
 def create_conv_model(fingerprint_input, model_settings, is_training):
   """Builds a standard convolutional model.
@@ -257,7 +255,6 @@ def create_conv_model(fingerprint_input, model_settings, is_training):
   else:
     return final_fc
 
-
 def create_tpool2_model(fingerprint_input, model_settings, is_training):
   """Builds a standard convolutional model.
   This is roughly the network labeled as 'cnn-trad-fpool3' in the
@@ -315,10 +312,7 @@ def create_tpool2_model(fingerprint_input, model_settings, is_training):
           [first_filter_height, first_filter_width, 1, first_filter_count],
           stddev=0.01))
   #Sergi 2018-01-14:También tengo que cambiar a formato NCHW aquí
-#  first_weights = tf.Variable(
-#      tf.truncated_normal(
-#          [1,first_filter_height, first_filter_width, first_filter_count],
-#          stddev=0.01))
+
   first_bias = tf.Variable(tf.zeros([first_filter_count]))
   first_conv = tf.nn.conv2d(fingerprint_4d, first_weights, [1, 1, 1, 1],'SAME', use_cudnn_on_gpu = True) + first_bias
   first_relu = tf.nn.relu(first_conv)
@@ -326,7 +320,7 @@ def create_tpool2_model(fingerprint_input, model_settings, is_training):
     first_dropout = tf.nn.dropout(first_relu, dropout_prob)
   else:
     first_dropout = first_relu
-  max_pool = tf.nn.max_pool(first_dropout, [1, pooling_time_size, pooling_freq_size, 1], 
+  max_pool = tf.nn.max_pool(first_dropout, [1, pooling_time_size, pooling_freq_size, 1],
                             [1, stride_time_size, stride_freq_size, 1], 'SAME')
   second_filter_width = 4
   second_filter_height = 10
@@ -339,9 +333,7 @@ def create_tpool2_model(fingerprint_input, model_settings, is_training):
           ],
           stddev=0.01))
   second_bias = tf.Variable(tf.zeros([second_filter_count]))
-#  second_conv = tf.nn.conv2d(max_pool, second_weights, [1, 1, 1, 1],
-#                             'SAME', data_format='NCHW') + second_bias
-  
+
   second_conv = tf.nn.conv2d(max_pool, second_weights, [1, 1, 1, 1], 'SAME') + second_bias
   second_relu = tf.nn.relu(second_conv)
   if is_training:
@@ -363,10 +355,9 @@ def create_tpool2_model(fingerprint_input, model_settings, is_training):
   final_fc_bias = tf.Variable(tf.zeros([label_count]))
   final_fc = tf.matmul(flattened_second_conv, final_fc_weights) + final_fc_bias
   if is_training:
-    return final_fc, dropout_prob,first_weights,second_weights,final_fc_weights  
+    return final_fc, dropout_prob,first_weights,second_weights,final_fc_weights
   else:
     return final_fc
-        
 
 def LSTMStep(my_input, previous_output, memory, my_shape):
     real_input = tf.concat([previous_output, my_input], 1)
@@ -379,7 +370,6 @@ def LSTMStep(my_input, previous_output, memory, my_shape):
     out = tf.nn.tanh(memory_out)*sigmoid_output3
     return out, memory_out
 
-                
 def create_rnn_model(fingerprint_input, model_settings, is_training):
     if is_training:
         dropout_prob = tf.placeholder(tf.float32, name='dropout_prob')
@@ -482,7 +472,7 @@ def create_tpool3_model(fingerprint_input, model_settings, is_training):
     first_dropout = tf.nn.dropout(first_relu, dropout_prob)
   else:
     first_dropout = first_relu
-  max_pool = tf.nn.max_pool(first_dropout, [1, 3, 2, 1], 
+  max_pool = tf.nn.max_pool(first_dropout, [1, 3, 2, 1],
                             [1, stride_time_size, stride_freq_size, 1], 'SAME')
   second_filter_width = 8
   second_filter_height = 20
@@ -497,15 +487,15 @@ def create_tpool3_model(fingerprint_input, model_settings, is_training):
   second_bias = tf.Variable(tf.zeros([second_filter_count]))
   second_conv = tf.nn.conv2d(max_pool, second_weights, [1, 1, 1, 1],
                              'SAME') + second_bias
-  
+
   second_conv = tf.nn.conv2d(max_pool, second_weights, [1, 1, 1, 1], 'SAME') + second_bias
   second_relu = tf.nn.relu(second_conv)
   if is_training:
     second_dropout = tf.nn.dropout(second_relu, dropout_prob)
   else:
     second_dropout = second_relu
-  
-  max_pool = tf.nn.max_pool(second_dropout, [1, 2, 1, 1], 
+
+  max_pool = tf.nn.max_pool(second_dropout, [1, 2, 1, 1],
                             [1, stride_time_size, stride_freq_size, 1], 'SAME')
 
   third_filter_width = 4
@@ -542,8 +532,6 @@ def create_tpool3_model(fingerprint_input, model_settings, is_training):
   final_fc_bias = tf.Variable(tf.zeros([label_count]))
   final_fc = tf.matmul(flattened_third_conv, final_fc_weights) + final_fc_bias
   if is_training:
-    return final_fc, dropout_prob,first_weights,second_weights,final_fc_weights  
+    return final_fc, dropout_prob,first_weights,second_weights,final_fc_weights
   else:
     return final_fc
-
-
