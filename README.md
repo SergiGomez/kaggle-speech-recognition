@@ -16,7 +16,7 @@ Important notes:
 
 1) The main skeleton of the code, as well as some specific functions, were taken from the great TensorFlow tutorial (www.tensorflow.org/tutorials/sequences/audio_recognition). It would not have been possible to get this project started without the great help of such a great tutorial prepared by the incredible team working at TensorFlow
 
-2) 
+2) There is no commits history in this repository due to the fact that all the project was developed using a private repository and was finally released once the Kaggle contest was over.
 
 - main.py: Main execution that performs the training task
 - scan_hyperparameters.sh: Bash program that schedules training executions with different combinations of hyperparameters given
